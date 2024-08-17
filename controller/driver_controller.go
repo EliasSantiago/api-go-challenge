@@ -95,9 +95,10 @@ func (d DriverController) UpdateDriver(ctx *gin.Context) {
 		return
 	}
 
-	driver, err := d.driverUsecase.UpdateDriver(driverUpdateRequest)
+	driver, err := d.driverUsecase.GetDriverByID(driverUpdateRequest.ID)
+
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, model.Response{Message: "Erro ao buscar motorista"})
 		return
 	}
 
@@ -109,7 +110,13 @@ func (d DriverController) UpdateDriver(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, driver)
+	driverUpdated, err := d.driverUsecase.UpdateDriver(driverUpdateRequest)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, driverUpdated)
 }
 
 func (d DriverController) DeleteDriver(ctx *gin.Context) {

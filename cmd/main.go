@@ -20,9 +20,13 @@ func main() {
 	DriverUseCase := usecase.NewDriverUseCase(DriverRepository)
 	DriverController := controller.NewDriverController(DriverUseCase)
 
-	server.GET("/ping", func(ctx *gin.Context) {
+	VehicleRepository := repository.NewVehicleRepository(dbConnection)
+	VehicleUseCase := usecase.NewVehicleUseCase(VehicleRepository)
+	VehicleController := controller.NewVehicleController(VehicleUseCase)
+
+	server.GET("/health", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
-			"message": "pong",
+			"message": "ok",
 		})
 	})
 
@@ -31,6 +35,11 @@ func main() {
 	server.GET("/drivers/:driverId", DriverController.GetDriverByID)
 	server.PUT("/drivers", DriverController.UpdateDriver)
 	server.DELETE("/drivers/:driverId", DriverController.DeleteDriver)
+
+	server.GET("/vehicles", VehicleController.GetVehicles)
+	server.POST("/vehicles", VehicleController.CreateVehicle)
+	server.GET("/vehicles/:vehicleId", VehicleController.GetVehicleByID)
+	server.PUT("/vehicles", VehicleController.UpdateVehicle)
 
 	server.Run(":8081")
 }
