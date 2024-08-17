@@ -87,3 +87,20 @@ func (dr *DriverRepository) GetDriverByID(id int64) (*model.Driver, error) {
 	query.Close()
 	return &driver, nil
 }
+
+func (dr *DriverRepository) UpdateDriver(driver model.Driver) error {
+	query, err := dr.connection.Prepare("UPDATE drivers SET cpf = $1, name =$2 WHERE id = $3")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	_, err = query.Exec(driver.CPF, driver.Name, driver.ID)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	query.Close()
+	return nil
+}

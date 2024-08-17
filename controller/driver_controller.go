@@ -84,3 +84,30 @@ func (d DriverController) GetDriverByID(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, driver)
 }
+
+func (d DriverController) UpdateDriver(ctx *gin.Context) {
+	var driverUpdateRequest model.DriverUpdateRequest
+	if err := ctx.ShouldBindJSON(&driverUpdateRequest); err != nil {
+		response := model.Response{
+			Message: "Dados inválidos",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	driver, err := d.driverUsecase.UpdateDriver(driverUpdateRequest)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	if driver == nil {
+		response := model.Response{
+			Message: "Motorista não encontrado",
+		}
+		ctx.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, driver)
+}

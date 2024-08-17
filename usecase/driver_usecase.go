@@ -23,7 +23,7 @@ func (du *DriverUsecase) CreateDriver(driver model.Driver) (model.Driver, error)
 		return model.Driver{}, err
 	}
 
-	driver.ID = driverID
+	driver.ID = int64(driverID)
 
 	return driver, nil
 }
@@ -35,4 +35,19 @@ func (du *DriverUsecase) GetDriverByID(id int64) (*model.Driver, error) {
 	}
 
 	return driver, nil
+}
+
+func (du *DriverUsecase) UpdateDriver(request model.DriverUpdateRequest) (*model.Driver, error) {
+	driver := model.Driver{
+		ID:   int64(request.ID),
+		CPF:  request.CPF,
+		Name: request.Name,
+	}
+
+	err := du.repository.UpdateDriver(driver)
+	if err != nil {
+		return nil, err
+	}
+
+	return &driver, nil
 }

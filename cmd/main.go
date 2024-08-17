@@ -29,6 +29,7 @@ func main() {
 	server.GET("/drivers", DriverController.GetDrivers)
 	server.POST("/drivers", DriverController.CreateDriver)
 	server.GET("/drivers/:driverId", DriverController.GetDriverByID)
+	server.PUT("/drivers", DriverController.UpdateDriver)
 
 	server.Run(":8081")
 }
