@@ -69,22 +69,14 @@ func (dr *DriverRepository) CreateDriver(driver model.Driver) (int, error) {
 
 func (dr *DriverRepository) GetDriverByID(id int64) (*model.Driver, error) {
 	var driver model.Driver
-	query, err := dr.connection.Prepare("SELECT id, cpf, name FROM drivers WHERE id = $1")
+	err := dr.connection.QueryRow("SELECT id, cpf, name FROM drivers WHERE id = $1", id).Scan(&driver.ID, &driver.CPF, &driver.Name)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
-
-	err = query.QueryRow(id).Scan(&driver.ID, &driver.CPF, &driver.Name)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	query.Close()
 	return &driver, nil
 }
 
@@ -103,4 +95,9 @@ func (dr *DriverRepository) UpdateDriver(driver model.Driver) error {
 
 	query.Close()
 	return nil
+}
+
+func (dr *DriverRepository) DeleteDriver(id int64) error {
+	_, err := dr.connection.Exec("DELETE FROM drivers WHERE id = $1", id)
+	return err
 }

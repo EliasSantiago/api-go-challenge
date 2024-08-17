@@ -111,3 +111,43 @@ func (d DriverController) UpdateDriver(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, driver)
 }
+
+func (d DriverController) DeleteDriver(ctx *gin.Context) {
+	id := ctx.Param("driverId")
+	if id == "" {
+		response := model.Response{
+			Message: "O ID do motorista é obrigatório",
+		}
+
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	driverID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		response := model.Response{
+			Message: "O ID do motorista deve ser um número",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	driver, err := d.driverUsecase.GetDriverByID(driverID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.Response{Message: "Erro ao buscar motorista"})
+		return
+	}
+
+	if driver == nil {
+		ctx.JSON(http.StatusNotFound, model.Response{Message: "Motorista não encontrado"})
+		return
+	}
+
+	err = d.driverUsecase.DeleteDriver(driverID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.Response{Message: "Motorista deletado com sucesso"})
+}

@@ -51,3 +51,11 @@ func (du *DriverUsecase) UpdateDriver(request model.DriverUpdateRequest) (*model
 
 	return &driver, nil
 }
+
+func (du *DriverUsecase) DeleteDriver(id int64) error {
+	err := du.repository.DeleteDriver(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

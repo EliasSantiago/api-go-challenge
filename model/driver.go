@@ -7,7 +7,7 @@ type Driver struct {
 }
 
 type DriverUpdateRequest struct {
-	ID   int64  `json:"id" binding:"required"`
+	ID   int64  `json:"driverId" binding:"required"`
 	CPF  string `json:"cpf" binding:"required"`
 	Name string `json:"name" binding:"required"`
 }
