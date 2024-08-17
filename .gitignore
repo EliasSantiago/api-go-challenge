@@ -1,0 +1,30 @@
+# Ignorar o arquivo .env
+.env
+
+# Ignorar binários compilados
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Ignorar diretórios de build
+/build
+/bin
+/target
+
+# Ignorar dependências do Go
+/vendor
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de configuração do editor
+.vscode/
+.idea/
+*.swp
