@@ -45,7 +45,7 @@ func (vu *vehicleUsecase) CreateVehicle(vehicle model.Vehicle) (model.Vehicle, e
 
 func (vu *vehicleUsecase) GetVehicleByID(id int64) (*model.Vehicle, error) {
 	if id <= 0 {
-		return nil, errors.New("O ID do veículo deve ser um número positivo")
+		return nil, errors.New("o ID do veículo deve ser um número positivo")
 	}
 
 	vehicle, err := vu.vehicleRepo.GetVehicleByID(id)
@@ -54,7 +54,7 @@ func (vu *vehicleUsecase) GetVehicleByID(id int64) (*model.Vehicle, error) {
 	}
 
 	if vehicle == nil {
-		return nil, errors.New("Veículo não encontrado")
+		return nil, errors.New("veículo não encontrado")
 	}
 
 	return vehicle, nil
@@ -62,7 +62,7 @@ func (vu *vehicleUsecase) GetVehicleByID(id int64) (*model.Vehicle, error) {
 
 func (vu *vehicleUsecase) UpdateVehicle(request model.VehicleUpdateRequest) (*model.Vehicle, error) {
 	if request.ID <= 0 {
-		return nil, errors.New("O ID do veículo deve ser um número positivo")
+		return nil, errors.New("o ID do veículo deve ser um número positivo")
 	}
 
 	vehicle, err := vu.vehicleRepo.GetVehicleByID(request.ID)
@@ -71,14 +71,10 @@ func (vu *vehicleUsecase) UpdateVehicle(request model.VehicleUpdateRequest) (*mo
 	}
 
 	if vehicle == nil {
-		return nil, errors.New("Veículo não encontrado")
+		return nil, errors.New("veículo não encontrado")
 	}
 
-	data := model.Vehicle{
-		ID:           request.ID,
-		LicensePlate: request.LicensePlate,
-		Model:        request.Model,
-	}
+	data := model.Vehicle(request)
 
 	err = vu.vehicleRepo.UpdateVehicle(data)
 	if err != nil {
@@ -90,7 +86,7 @@ func (vu *vehicleUsecase) UpdateVehicle(request model.VehicleUpdateRequest) (*mo
 
 func (vu *vehicleUsecase) DeleteVehicle(id int64) error {
 	if id <= 0 {
-		return errors.New("O ID do veículo deve ser um número positivo")
+		return errors.New("o ID do veículo deve ser um número positivo")
 	}
 
 	vehicle, err := vu.vehicleRepo.GetVehicleByID(id)
@@ -99,7 +95,7 @@ func (vu *vehicleUsecase) DeleteVehicle(id int64) error {
 	}
 
 	if vehicle == nil {
-		return errors.New("Veículo não encontrado")
+		return errors.New("veículo não encontrado")
 	}
 
 	err = vu.vehicleRepo.DeleteVehicle(id)
