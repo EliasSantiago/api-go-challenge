@@ -46,8 +46,9 @@ Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de 
 ## Collection do Postman
 
 1. **Para facilitar o teste das rotas da API, uma collection do Postman está disponível no projeto.**
-
+```plaintext
 |-- /postman/api-go-challenge.postman_collection.json
+```
 
 ## Estrutura do Projeto
 
