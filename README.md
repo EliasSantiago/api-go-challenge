@@ -19,13 +19,23 @@ Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de 
     cd api-go-challenge
     ```
 
-2. **Inicie os serviços com Docker Compose:**
+2. **Crie um arquivo `.env` com as seguintes configurações:**
+
+    ```properties
+    DB_HOST="localhost"
+    DB_PORT="5432"
+    DB_USER="postgres"
+    DB_PASSWORD="postgres"
+    DB_NAME="postgres"
+    ```
+
+3. **Inicie os serviços com Docker Compose:**
 
     ```sh
     docker-compose up -d
     ```
 
-3. **Acesse a aplicação:**
+4. **Acesse a aplicação:**
 
     A API estará disponível em `http://localhost:8081`.
 
