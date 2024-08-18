@@ -1,6 +1,6 @@
 # api-go-challenge
 
-## Introdução
+## Descrição
 
 Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de dados. O Docker Compose é utilizado para facilitar a configuração e inicialização dos serviços.
 
@@ -29,6 +29,26 @@ Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de 
 
     A API estará disponível em `http://localhost:8081`.
 
+## Configuração do Banco de Dados
+
+1. **Execute o script de criação das tabelas:**
+
+    O script de criação das tabelas está localizado em `db/migrations/create_tables.sql`.
+
+## Testes
+
+1. **Para rodar os testes, use o seguinte comando:**
+
+    ```sh
+    go test ./...
+    ```
+
+## Collection do Postman
+
+1. **Para facilitar o teste das rotas da API, uma collection do Postman está disponível no projeto.**
+
+|-- /postman/api-go-challenge.postman_collection.json
+
 ## Estrutura do Projeto
 
 ```plaintext
@@ -37,6 +57,8 @@ Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de 
 |   |-- main.go
 |-- /controller
 |-- /db
+|   |-- migrations
+|-- /postman
 |-- /repository
 |-- /routes
 |-- /usecase
