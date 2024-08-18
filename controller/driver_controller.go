@@ -54,7 +54,6 @@ func (d DriverController) GetDriverByID(ctx *gin.Context) {
 		response := model.Response{
 			Message: "O ID do motorista é obrigatório",
 		}
-
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -70,15 +69,17 @@ func (d DriverController) GetDriverByID(ctx *gin.Context) {
 
 	driver, err := d.driverUsecase.GetDriverByID(driverID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	if driver == nil {
-		response := model.Response{
-			Message: "Motorista não encontrado",
+		if err.Error() == "Motorista não encontrado" {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusNotFound, response)
+		} else {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusBadRequest, response)
 		}
-		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
 
@@ -95,24 +96,19 @@ func (d DriverController) UpdateDriver(ctx *gin.Context) {
 		return
 	}
 
-	driver, err := d.driverUsecase.GetDriverByID(driverUpdateRequest.ID)
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, model.Response{Message: "Erro ao buscar motorista"})
-		return
-	}
-
-	if driver == nil {
-		response := model.Response{
-			Message: "Motorista não encontrado",
-		}
-		ctx.JSON(http.StatusNotFound, response)
-		return
-	}
-
 	driverUpdated, err := d.driverUsecase.UpdateDriver(driverUpdateRequest)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		if err.Error() == "Motorista não encontrado" {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusNotFound, response)
+		} else {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusBadRequest, response)
+		}
 		return
 	}
 
@@ -125,7 +121,6 @@ func (d DriverController) DeleteDriver(ctx *gin.Context) {
 		response := model.Response{
 			Message: "O ID do motorista é obrigatório",
 		}
-
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -139,20 +134,19 @@ func (d DriverController) DeleteDriver(ctx *gin.Context) {
 		return
 	}
 
-	driver, err := d.driverUsecase.GetDriverByID(driverID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, model.Response{Message: "Erro ao buscar motorista"})
-		return
-	}
-
-	if driver == nil {
-		ctx.JSON(http.StatusNotFound, model.Response{Message: "Motorista não encontrado"})
-		return
-	}
-
 	err = d.driverUsecase.DeleteDriver(driverID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		if err.Error() == "Motorista não encontrado" {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusNotFound, response)
+		} else {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusBadRequest, response)
+		}
 		return
 	}
 

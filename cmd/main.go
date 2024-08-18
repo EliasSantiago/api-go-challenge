@@ -21,7 +21,7 @@ func main() {
 	DriverController := controller.NewDriverController(DriverUseCase)
 
 	VehicleRepository := repository.NewVehicleRepository(dbConnection)
-	VehicleUseCase := usecase.NewVehicleUseCase(VehicleRepository)
+	VehicleUseCase := usecase.NewVehicleUseCase(VehicleRepository, DriverRepository)
 	VehicleController := controller.NewVehicleController(VehicleUseCase)
 
 	server.GET("/health", func(ctx *gin.Context) {
@@ -40,6 +40,9 @@ func main() {
 	server.POST("/vehicles", VehicleController.CreateVehicle)
 	server.GET("/vehicles/:vehicleId", VehicleController.GetVehicleByID)
 	server.PUT("/vehicles", VehicleController.UpdateVehicle)
+	server.DELETE("/vehicles/:vehicleId", VehicleController.DeleteVehicle)
+
+	server.POST("/vehicles/:vehicleId/assign-driver/:driverId", VehicleController.AssignDriver)
 
 	server.Run(":8081")
 }

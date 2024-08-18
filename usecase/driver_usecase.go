@@ -1,24 +1,36 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/EliasSantiago/api-go-challenge/model"
 	"github.com/EliasSantiago/api-go-challenge/repository"
 )
 
-type DriverUsecase struct {
-	repository repository.DriverRepository
+type DriverUsecase interface {
+	GetDrivers() ([]model.Driver, error)
+	CreateDriver(driver model.Driver) (model.Driver, error)
+	GetDriverByID(id int64) (*model.Driver, error)
+	UpdateDriver(request model.DriverUpdateRequest) (*model.Driver, error)
+	DeleteDriver(id int64) error
+}
+
+type driverUsecase struct {
+	driverRepo repository.DriverRepository
 }
 
 func NewDriverUseCase(repo repository.DriverRepository) DriverUsecase {
-	return DriverUsecase{repository: repo}
+	return &driverUsecase{
+		driverRepo: repo,
+	}
 }
 
-func (du *DriverUsecase) GetDrivers() ([]model.Driver, error) {
-	return du.repository.GetDrivers()
+func (du *driverUsecase) GetDrivers() ([]model.Driver, error) {
+	return du.driverRepo.GetDrivers()
 }
 
-func (du *DriverUsecase) CreateDriver(driver model.Driver) (model.Driver, error) {
-	driverID, err := du.repository.CreateDriver(driver)
+func (du *driverUsecase) CreateDriver(driver model.Driver) (model.Driver, error) {
+	driverID, err := du.driverRepo.CreateDriver(driver)
 	if err != nil {
 		return model.Driver{}, err
 	}
@@ -28,8 +40,41 @@ func (du *DriverUsecase) CreateDriver(driver model.Driver) (model.Driver, error)
 	return driver, nil
 }
 
-func (du *DriverUsecase) GetDriverByID(id int64) (*model.Driver, error) {
-	driver, err := du.repository.GetDriverByID(id)
+func (du *driverUsecase) GetDriverByID(id int64) (*model.Driver, error) {
+	if id <= 0 {
+		return nil, errors.New("O ID do motorista deve ser um número positivo")
+	}
+
+	driver, err := du.driverRepo.GetDriverByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if driver == nil {
+		return nil, errors.New("Motorista não encontrado")
+	}
+
+	return driver, nil
+}
+
+func (du *driverUsecase) UpdateDriver(request model.DriverUpdateRequest) (*model.Driver, error) {
+	if request.ID <= 0 {
+		return nil, errors.New("O ID do motorista deve ser um número positivo")
+	}
+
+	driver, err := du.driverRepo.GetDriverByID(request.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if driver == nil {
+		return nil, errors.New("Motorista não encontrado")
+	}
+
+	driver.Name = request.Name
+	driver.CPF = request.CPF
+
+	err = du.driverRepo.UpdateDriver(*driver)
 	if err != nil {
 		return nil, err
 	}
@@ -37,25 +82,24 @@ func (du *DriverUsecase) GetDriverByID(id int64) (*model.Driver, error) {
 	return driver, nil
 }
 
-func (du *DriverUsecase) UpdateDriver(request model.DriverUpdateRequest) (*model.Driver, error) {
-	driver := model.Driver{
-		ID:   int64(request.ID),
-		CPF:  request.CPF,
-		Name: request.Name,
+func (du *driverUsecase) DeleteDriver(id int64) error {
+	if id <= 0 {
+		return errors.New("O ID do motorista deve ser um número positivo")
 	}
 
-	err := du.repository.UpdateDriver(driver)
-	if err != nil {
-		return nil, err
-	}
-
-	return &driver, nil
-}
-
-func (du *DriverUsecase) DeleteDriver(id int64) error {
-	err := du.repository.DeleteDriver(id)
+	driver, err := du.driverRepo.GetDriverByID(id)
 	if err != nil {
 		return err
 	}
+
+	if driver == nil {
+		return errors.New("Motorista não encontrado")
+	}
+
+	err = du.driverRepo.DeleteDriver(id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -18,7 +18,7 @@ func NewVehicleRepository(connection *sql.DB) VehicleRepository {
 }
 
 func (vr *VehicleRepository) GetVehicles() ([]model.Vehicle, error) {
-	query := "SELECT license_plate, model FROM vehicles"
+	query := "SELECT id, license_plate, model FROM vehicles"
 	rows, err := vr.connection.Query(query)
 	if err != nil {
 		fmt.Println(err)
@@ -31,7 +31,7 @@ func (vr *VehicleRepository) GetVehicles() ([]model.Vehicle, error) {
 	for rows.Next() {
 		err = rows.Scan(
 			&vehicleObj.ID,
-			&vehicleObj.LicenseVehicle,
+			&vehicleObj.LicensePlate,
 			&vehicleObj.Model,
 		)
 
@@ -57,7 +57,7 @@ func (vr *VehicleRepository) CreateVehicle(vehicle model.Vehicle) (int, error) {
 		return 0, err
 	}
 
-	err = query.QueryRow(vehicle.LicenseVehicle, vehicle.Model).Scan(&id)
+	err = query.QueryRow(vehicle.LicensePlate, vehicle.Model).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
@@ -67,9 +67,9 @@ func (vr *VehicleRepository) CreateVehicle(vehicle model.Vehicle) (int, error) {
 	return id, nil
 }
 
-func (dr *VehicleRepository) GetVehicleByID(id int64) (*model.Vehicle, error) {
+func (vr *VehicleRepository) GetVehicleByID(id int64) (*model.Vehicle, error) {
 	var vehicle model.Vehicle
-	err := dr.connection.QueryRow("SELECT id, license_plate, model FROM vehicles WHERE id = $1", id).Scan(&vehicle.ID, &vehicle.LicenseVehicle, &vehicle.Model)
+	err := vr.connection.QueryRow("SELECT id, license_plate, model FROM vehicles WHERE id = $1", id).Scan(&vehicle.ID, &vehicle.LicensePlate, &vehicle.Model)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -80,19 +80,35 @@ func (dr *VehicleRepository) GetVehicleByID(id int64) (*model.Vehicle, error) {
 	return &vehicle, nil
 }
 
-func (dr *VehicleRepository) UpdateVehicle(vehicle model.Vehicle) error {
-	query, err := dr.connection.Prepare("UPDATE vehicles SET license_plate = $1, model =$2 WHERE id = $3")
+func (vr *VehicleRepository) UpdateVehicle(vehicle model.Vehicle) error {
+	query, err := vr.connection.Prepare("UPDATE vehicles SET license_plate = $1, model =$2 WHERE id = $3")
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
-	_, err = query.Exec(vehicle.LicenseVehicle, vehicle.Model, vehicle.ID)
+	_, err = query.Exec(vehicle.LicensePlate, vehicle.Model, vehicle.ID)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
 	query.Close()
+	return nil
+}
+
+func (vr *VehicleRepository) DeleteVehicle(id int64) error {
+	_, err := vr.connection.Exec("DELETE FROM vehicles WHERE id = $1", id)
+	return err
+}
+
+func (vr *VehicleRepository) AssignDriver(request model.VehicleAssignDriverRequest) error {
+	query := `INSERT INTO driver_vehicles (driver_id, vehicle_id) VALUES ($1, $2)`
+	_, err := vr.connection.Exec(query, request.DriverID, request.VehicleID)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -1,24 +1,39 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/EliasSantiago/api-go-challenge/model"
 	"github.com/EliasSantiago/api-go-challenge/repository"
 )
 
-type VehicleUsecase struct {
-	repository repository.VehicleRepository
+type VehicleUsecase interface {
+	GetVehicles() ([]model.Vehicle, error)
+	CreateVehicle(vehicle model.Vehicle) (model.Vehicle, error)
+	AssignDriver(vehicleID, driverID int64) error
+	GetVehicleByID(id int64) (*model.Vehicle, error)
+	UpdateVehicle(request model.VehicleUpdateRequest) (*model.Vehicle, error)
+	DeleteVehicle(id int64) error
 }
 
-func NewVehicleUseCase(repo repository.VehicleRepository) VehicleUsecase {
-	return VehicleUsecase{repository: repo}
+type vehicleUsecase struct {
+	vehicleRepo repository.VehicleRepository
+	driverRepo  repository.DriverRepository
 }
 
-func (vu *VehicleUsecase) GetVehicles() ([]model.Vehicle, error) {
-	return vu.repository.GetVehicles()
+func NewVehicleUseCase(vr repository.VehicleRepository, dr repository.DriverRepository) VehicleUsecase {
+	return &vehicleUsecase{
+		vehicleRepo: vr,
+		driverRepo:  dr,
+	}
 }
 
-func (vu *VehicleUsecase) CreateVehicle(vehicle model.Vehicle) (model.Vehicle, error) {
-	vehicleID, err := vu.repository.CreateVehicle(vehicle)
+func (vu *vehicleUsecase) GetVehicles() ([]model.Vehicle, error) {
+	return vu.vehicleRepo.GetVehicles()
+}
+
+func (vu *vehicleUsecase) CreateVehicle(vehicle model.Vehicle) (model.Vehicle, error) {
+	vehicleID, err := vu.vehicleRepo.CreateVehicle(vehicle)
 	if err != nil {
 		return model.Vehicle{}, err
 	}
@@ -28,26 +43,94 @@ func (vu *VehicleUsecase) CreateVehicle(vehicle model.Vehicle) (model.Vehicle, e
 	return vehicle, nil
 }
 
-func (du *VehicleUsecase) GetVehicleByID(id int64) (*model.Vehicle, error) {
-	vehicle, err := du.repository.GetVehicleByID(id)
+func (vu *vehicleUsecase) GetVehicleByID(id int64) (*model.Vehicle, error) {
+	if id <= 0 {
+		return nil, errors.New("O ID do veículo deve ser um número positivo")
+	}
+
+	vehicle, err := vu.vehicleRepo.GetVehicleByID(id)
 	if err != nil {
 		return nil, err
+	}
+
+	if vehicle == nil {
+		return nil, errors.New("Veículo não encontrado")
 	}
 
 	return vehicle, nil
 }
 
-func (du *VehicleUsecase) UpdateVehicle(request model.VehicleUpdateRequest) (*model.Vehicle, error) {
-	vehicle := model.Vehicle{
-		ID:             int64(request.ID),
-		LicenseVehicle: request.LicenseVehicle,
-		Model:          request.Model,
+func (vu *vehicleUsecase) UpdateVehicle(request model.VehicleUpdateRequest) (*model.Vehicle, error) {
+	if request.ID <= 0 {
+		return nil, errors.New("O ID do veículo deve ser um número positivo")
 	}
 
-	err := du.repository.UpdateVehicle(vehicle)
+	vehicle, err := vu.vehicleRepo.GetVehicleByID(request.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &vehicle, nil
+	if vehicle == nil {
+		return nil, errors.New("Veículo não encontrado")
+	}
+
+	data := model.Vehicle{
+		ID:           request.ID,
+		LicensePlate: request.LicensePlate,
+		Model:        request.Model,
+	}
+
+	err = vu.vehicleRepo.UpdateVehicle(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}
+
+func (vu *vehicleUsecase) DeleteVehicle(id int64) error {
+	if id <= 0 {
+		return errors.New("O ID do veículo deve ser um número positivo")
+	}
+
+	vehicle, err := vu.vehicleRepo.GetVehicleByID(id)
+	if err != nil {
+		return err
+	}
+
+	if vehicle == nil {
+		return errors.New("Veículo não encontrado")
+	}
+
+	err = vu.vehicleRepo.DeleteVehicle(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (vu *vehicleUsecase) AssignDriver(vehicleID, driverID int64) error {
+	vehicle, err := vu.vehicleRepo.GetVehicleByID(vehicleID)
+	if err != nil {
+		return err
+	}
+	if vehicle == nil {
+		return errors.New("veículo não encontrado")
+	}
+
+	driver, err := vu.driverRepo.GetDriverByID(driverID)
+	if err != nil {
+		return err
+	}
+	if driver == nil {
+		return errors.New("motorista não encontrado")
+	}
+
+	data := model.VehicleAssignDriverRequest{
+		VehicleID: vehicleID,
+		DriverID:  driverID,
+	}
+
+	return vu.vehicleRepo.AssignDriver(data)
 }
