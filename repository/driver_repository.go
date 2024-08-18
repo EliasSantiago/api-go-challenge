@@ -7,17 +7,25 @@ import (
 	"github.com/EliasSantiago/api-go-challenge/model"
 )
 
-type DriverRepository struct {
+type DriverRepository interface {
+	GetDrivers() ([]model.Driver, error)
+	GetDriverByID(id int64) (*model.Driver, error)
+	CreateDriver(driver model.Driver) (int64, error)
+	UpdateDriver(driver model.Driver) error
+	DeleteDriver(id int64) error
+}
+
+type driverRepository struct {
 	connection *sql.DB
 }
 
 func NewDriverRepository(connection *sql.DB) DriverRepository {
-	return DriverRepository{
+	return &driverRepository{
 		connection: connection,
 	}
 }
 
-func (dr *DriverRepository) GetDrivers() ([]model.Driver, error) {
+func (dr *driverRepository) GetDrivers() ([]model.Driver, error) {
 	query := "SELECT id, cpf, name FROM drivers"
 	rows, err := dr.connection.Query(query)
 	if err != nil {
@@ -46,8 +54,8 @@ func (dr *DriverRepository) GetDrivers() ([]model.Driver, error) {
 	return driverList, nil
 }
 
-func (dr *DriverRepository) CreateDriver(driver model.Driver) (int, error) {
-	var id int
+func (dr *driverRepository) CreateDriver(driver model.Driver) (int64, error) {
+	var id int64
 	query, err := dr.connection.Prepare("INSERT INTO drivers" +
 		"(cpf, name)" +
 		" VALUES ($1, $2) RETURNING id")
@@ -67,7 +75,7 @@ func (dr *DriverRepository) CreateDriver(driver model.Driver) (int, error) {
 	return id, nil
 }
 
-func (dr *DriverRepository) GetDriverByID(id int64) (*model.Driver, error) {
+func (dr *driverRepository) GetDriverByID(id int64) (*model.Driver, error) {
 	var driver model.Driver
 	err := dr.connection.QueryRow("SELECT id, cpf, name FROM drivers WHERE id = $1", id).Scan(&driver.ID, &driver.CPF, &driver.Name)
 
@@ -80,7 +88,7 @@ func (dr *DriverRepository) GetDriverByID(id int64) (*model.Driver, error) {
 	return &driver, nil
 }
 
-func (dr *DriverRepository) UpdateDriver(driver model.Driver) error {
+func (dr *driverRepository) UpdateDriver(driver model.Driver) error {
 	query, err := dr.connection.Prepare("UPDATE drivers SET cpf = $1, name =$2 WHERE id = $3")
 	if err != nil {
 		fmt.Println(err)
@@ -97,7 +105,7 @@ func (dr *DriverRepository) UpdateDriver(driver model.Driver) error {
 	return nil
 }
 
-func (dr *DriverRepository) DeleteDriver(id int64) error {
+func (dr *driverRepository) DeleteDriver(id int64) error {
 	_, err := dr.connection.Exec("DELETE FROM drivers WHERE id = $1", id)
 	return err
 }

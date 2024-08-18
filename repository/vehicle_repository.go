@@ -7,17 +7,26 @@ import (
 	"github.com/EliasSantiago/api-go-challenge/model"
 )
 
-type VehicleRepository struct {
+type VehicleRepository interface {
+	GetVehicles() ([]model.Vehicle, error)
+	CreateVehicle(vehicle model.Vehicle) (int64, error)
+	GetVehicleByID(id int64) (*model.Vehicle, error)
+	UpdateVehicle(vehicle model.Vehicle) error
+	DeleteVehicle(id int64) error
+	AssignDriver(request model.VehicleAssignDriverRequest) error
+}
+
+type vehicleRepository struct {
 	connection *sql.DB
 }
 
 func NewVehicleRepository(connection *sql.DB) VehicleRepository {
-	return VehicleRepository{
+	return &vehicleRepository{
 		connection: connection,
 	}
 }
 
-func (vr *VehicleRepository) GetVehicles() ([]model.Vehicle, error) {
+func (vr *vehicleRepository) GetVehicles() ([]model.Vehicle, error) {
 	query := "SELECT id, license_plate, model FROM vehicles"
 	rows, err := vr.connection.Query(query)
 	if err != nil {
@@ -46,8 +55,8 @@ func (vr *VehicleRepository) GetVehicles() ([]model.Vehicle, error) {
 	return vehicleList, nil
 }
 
-func (vr *VehicleRepository) CreateVehicle(vehicle model.Vehicle) (int, error) {
-	var id int
+func (vr *vehicleRepository) CreateVehicle(vehicle model.Vehicle) (int64, error) {
+	var id int64
 	query, err := vr.connection.Prepare("INSERT INTO vehicles" +
 		"(license_plate, model)" +
 		" VALUES ($1, $2) RETURNING id")
@@ -67,7 +76,7 @@ func (vr *VehicleRepository) CreateVehicle(vehicle model.Vehicle) (int, error) {
 	return id, nil
 }
 
-func (vr *VehicleRepository) GetVehicleByID(id int64) (*model.Vehicle, error) {
+func (vr *vehicleRepository) GetVehicleByID(id int64) (*model.Vehicle, error) {
 	var vehicle model.Vehicle
 	err := vr.connection.QueryRow("SELECT id, license_plate, model FROM vehicles WHERE id = $1", id).Scan(&vehicle.ID, &vehicle.LicensePlate, &vehicle.Model)
 
@@ -80,7 +89,7 @@ func (vr *VehicleRepository) GetVehicleByID(id int64) (*model.Vehicle, error) {
 	return &vehicle, nil
 }
 
-func (vr *VehicleRepository) UpdateVehicle(vehicle model.Vehicle) error {
+func (vr *vehicleRepository) UpdateVehicle(vehicle model.Vehicle) error {
 	query, err := vr.connection.Prepare("UPDATE vehicles SET license_plate = $1, model =$2 WHERE id = $3")
 	if err != nil {
 		fmt.Println(err)
@@ -97,12 +106,12 @@ func (vr *VehicleRepository) UpdateVehicle(vehicle model.Vehicle) error {
 	return nil
 }
 
-func (vr *VehicleRepository) DeleteVehicle(id int64) error {
+func (vr *vehicleRepository) DeleteVehicle(id int64) error {
 	_, err := vr.connection.Exec("DELETE FROM vehicles WHERE id = $1", id)
 	return err
 }
 
-func (vr *VehicleRepository) AssignDriver(request model.VehicleAssignDriverRequest) error {
+func (vr *vehicleRepository) AssignDriver(request model.VehicleAssignDriverRequest) error {
 	query := `INSERT INTO driver_vehicles (driver_id, vehicle_id) VALUES ($1, $2)`
 	_, err := vr.connection.Exec(query, request.DriverID, request.VehicleID)
 
