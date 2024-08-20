@@ -15,8 +15,8 @@ Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de 
 1. **Clone o repositório:**
 
     ```sh
-    git clone https://github.com/EliasSantiago/api-go-challenge.git
-    cd api-go-challenge
+        git clone https://github.com/EliasSantiago/api-go-challenge.git
+        cd api-go-challenge
     ```
 
 2. **Crie um arquivo `.env` com as seguintes configurações:**
