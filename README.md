@@ -22,11 +22,14 @@ Este projeto é uma API desenvolvida em Go que utiliza PostgreSQL como banco de 
 2. **Crie um arquivo `.env` com as seguintes configurações:**
 
     ```properties
-    DB_HOST="localhost"
-    DB_PORT="5432"
-    DB_USER="postgres"
-    DB_PASSWORD="postgres"
-    DB_NAME="postgres"
+        POSTGRES_USER=postgres
+        POSTGRES_PASSWORD=postgres
+        POSTGRES_DB=postgres
+        DB_HOST=db
+        DB_PORT=5432
+        DB_USER=postgres
+        DB_PASSWORD=postgres
+        DB_NAME=postgres
     ```
 
 3. **Inicie os serviços com Docker Compose:**
